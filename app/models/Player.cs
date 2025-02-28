@@ -1,7 +1,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-class Player
+public class Player
 {
     private int player_id;
     private String username;

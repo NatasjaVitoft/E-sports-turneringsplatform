@@ -18,6 +18,7 @@ conn.Close(); */
 while (true)
 {
     Console.WriteLine("1. Register Player");
+    Console.WriteLine("2. Join Tournament");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -32,6 +33,10 @@ while (true)
             Console.WriteLine(newPlayer.GetUsername(), newPlayer.GetEmail());
             // PLaceholder for inserting into the database
             Console.WriteLine("Player registered!");
+            break;
+        
+        case "2":
+            Console.WriteLine("lol");
 
             break;
         case "q":
