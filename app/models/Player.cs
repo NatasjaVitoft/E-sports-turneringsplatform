@@ -1,17 +1,14 @@
-using System.ComponentModel.DataAnnotations;
-
 public class Player
 {
-    public int player_id;
+    public int PlayerId;
     public String username;
     public String email;
     public int ranking;
     public DateTime created_at;
 
-
-    public Player(int player_id, String username, String email, int ranking, DateTime created_at)
+    public Player(int playerId, String username, String email, int ranking, DateTime created_at)
     {
-        this.player_id = player_id;
+        this.PlayerId = playerId;
         this.username = username;
         this.email = email;
         this.ranking = ranking;
