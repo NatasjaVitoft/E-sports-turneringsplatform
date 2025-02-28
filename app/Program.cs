@@ -2,23 +2,17 @@
 
 var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=esports";
 
-await using var conn = new NpgsqlConnection(connString);
-await conn.OpenAsync();
 
-// Retrieve all rows
-/* await using (var cmd = new NpgsqlCommand("SELECT username FROM players", conn))
-await using (var reader = await cmd.ExecuteReaderAsync())
-{
-    while (await reader.ReadAsync())
-        Console.WriteLine(reader.GetString(0));
-}
+/* What mapper to use */
 
-conn.Close(); */
+// PlayerMapper pm = new(connString);
+SQLPlayerMapper pm = new(connString);
 
 while (true)
 {
     Console.WriteLine("1. Register Player");
     Console.WriteLine("2. Join Tournament");
+    Console.WriteLine("3. Submit Match Result");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -30,17 +24,42 @@ while (true)
             var email = Console.ReadLine();
 
             Player newPlayer = new(username, email);
-            Console.WriteLine(newPlayer.GetUsername(), newPlayer.GetEmail());
-            // PLaceholder for inserting into the database
-            Console.WriteLine("Player registered!");
+
+            try {await pm.RegisterPlayer(newPlayer);}
+            catch (NpgsqlException e) {Console.WriteLine(e.Message);}
             break;
         
         case "2":
-            Console.WriteLine("lol");
+            // Join tournament
+            Console.WriteLine("Enter Tournament ID:");
+            if (int.TryParse(Console.ReadLine(), out int t_id))
+            Console.WriteLine("Enter player ID:");
 
+            if (int.TryParse(Console.ReadLine(), out int p_id))
+
+            try { await pm.JoinTournament(p_id, t_id); }
+            catch (NpgsqlException e) { Console.WriteLine(e.Message); }
+
+            Console.WriteLine("Joined Tournament!");
+            // ...
             break;
+
+        case "3":
+            // submit match result
+            Console.WriteLine("Enter Match ID:");
+            if (int.TryParse(Console.ReadLine(), out int m_id))
+            Console.WriteLine("Enter Winner ID:");
+
+            if (int.TryParse(Console.ReadLine(), out int w_id))
+
+            try { await pm.SubmitMatchResult(m_id, w_id); }
+            catch (NpgsqlException e) { Console.WriteLine(e.Message); }
+
+            Console.WriteLine("Submitted match result!");
+            // ...
+            break;
+
         case "q":
-            conn.Close();
             return;
     }
 }
