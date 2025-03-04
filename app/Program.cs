@@ -41,7 +41,6 @@ while (true)
             catch (NpgsqlException e) { Console.WriteLine(e.Message); }
 
             Console.WriteLine("Joined Tournament!");
-            // ...
             break;
 
         case "3":
