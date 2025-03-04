@@ -1,6 +1,6 @@
 using Npgsql;
 
-public class SQLPlayerMapper(string connectionString)
+public class SQLMapper(string connectionString)
 {
     private string _connectionString = connectionString;
 

@@ -7,7 +7,7 @@ var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=es
 /* What mapper to use */
 
 // PlayerMapper pm = new(connString);
-SQLPlayerMapper pm = new(connString);
+SQLMapper pm = new(connString);
 
 while (true)
 {
