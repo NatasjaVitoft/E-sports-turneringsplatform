@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\natas\\Desktop\\Database\\database_første_aflevering\\app\\app.csproj": {}
+    "/home/kotteletfisk/Cphbusiness/soft_databases/E-sports-turneringsplatform/app/app.csproj": {}
   },
   "projects": {
-    "C:\\Users\\natas\\Desktop\\Database\\database_første_aflevering\\app\\app.csproj": {
+    "/home/kotteletfisk/Cphbusiness/soft_databases/E-sports-turneringsplatform/app/app.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\natas\\Desktop\\Database\\database_første_aflevering\\app\\app.csproj",
+        "projectUniqueName": "/home/kotteletfisk/Cphbusiness/soft_databases/E-sports-turneringsplatform/app/app.csproj",
         "projectName": "app",
-        "projectPath": "C:\\Users\\natas\\Desktop\\Database\\database_første_aflevering\\app\\app.csproj",
-        "packagesPath": "C:\\Users\\natas\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\natas\\Desktop\\Database\\database_første_aflevering\\app\\obj\\",
+        "projectPath": "/home/kotteletfisk/Cphbusiness/soft_databases/E-sports-turneringsplatform/app/app.csproj",
+        "packagesPath": "/home/kotteletfisk/.nuget/packages/",
+        "outputPath": "/home/kotteletfisk/Cphbusiness/soft_databases/E-sports-turneringsplatform/app/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\natas\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/home/kotteletfisk/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
@@ -38,7 +38,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -60,12 +60,18 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[9.0.2, 9.0.2]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
