@@ -1,3 +1,5 @@
+app/*.dll
+app/*.pdb
 bin
 obj
 node_modules

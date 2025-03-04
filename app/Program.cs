@@ -1,5 +1,6 @@
 ﻿using Npgsql;
 
+
 var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=esports";
 
 
@@ -62,5 +63,4 @@ while (true)
             return;
     }
 }
-
 
