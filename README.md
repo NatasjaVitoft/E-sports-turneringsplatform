@@ -11,5 +11,5 @@ On starting the program the user is greeted with:
 
 1. Register Player
 2. Join Tournament
-3. Submit Match Result
+3. Submit Match Result<br>
 q. Quit
