@@ -7,6 +7,7 @@ var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=es
 /* What mapper to use */
 
 // PlayerMapper pm = new(connString);
+OptimistMapper om = new(connString);
 SQLMapper pm = new(connString);
 
 while (true)
@@ -14,6 +15,7 @@ while (true)
     Console.WriteLine("1. Register Player");
     Console.WriteLine("2. Join Tournament");
     Console.WriteLine("3. Submit Match Result");
+    Console.WriteLine("4. TEST");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -57,6 +59,29 @@ while (true)
 
             Console.WriteLine("Submitted match result!");
             // ...
+            break;
+        
+        case "4":
+            // TEST
+            Console.WriteLine("TEST");
+
+            Console.WriteLine("Enter Tournament ID:");
+            if (int.TryParse(Console.ReadLine(), out t_id))
+            Console.WriteLine("Enter Start date:");
+            if (DateOnly.TryParse(Console.ReadLine(), out DateOnly date))
+
+
+            try 
+            {
+                if (await om.SetStartDate(t_id, date))
+                {
+                    Console.WriteLine($"Succesfully set start date to {date}");
+                }
+
+                else Console.WriteLine("Update failed");
+            }
+            catch (NpgsqlException e) { Console.WriteLine(e.Message, e.StackTrace);}
+
             break;
 
         case "q":
