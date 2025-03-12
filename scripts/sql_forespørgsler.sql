@@ -46,25 +46,38 @@ FROM players
 ORDER BY ranking DESC;
 
 -- 8 : Beregn gennemsnitlig ranking for alle spillere.
-
+SELECT AVG(ranking) AS average_ranking FROM players;
 
 -- 9 : Vis turneringer med mindst 5 deltagere.
-
+SELECT tournaments.tournament_id, COUNT(tournament_registrations.registration_id)
+AS player_count
+FROM tournaments NATURAL JOIN tournament_registrations
+GROUP BY tournaments.tournament_id
+HAVING COUNT(tournament_registrations.registration_id) > 4;
 
 -- 10 : Find det samlede antal spillere i systemet.
-
+SELECT COUNT(*) AS total_players FROM players;
 
 -- 11 : Find alle kampe, der mangler en vinder.
-
+SELECT * FROM matches WHERE winner IS NULL;
 
 -- 12 : Vis de mest populære spil baseret på turneringsantal.
-
+SELECT game, COUNT(game) AS amount FROM tournaments
+GROUP BY game
+ORDER BY COUNT(game) DESC;
 
 -- 13 : Find de 5 nyeste oprettede turneringer.
-
+SELECT * FROM tournaments
+ORDER BY created_at DESC
+LIMIT 5;
 
 -- 14 : Find spillere, der har registreret sig i flere end 3 turneringer.
-
+SELECT * FROM players WHERE player_id IN (
+  SELECT player_id FROM tournament_registrations
+  GROUP BY player_id
+  HAVING COUNT(tournament_id) > 3
+);
 
 -- 15 : Hent alle kampe i en turnering sorteret efter dato.
-
+SELECT * FROM matches WHERE tournament_id = 1
+ORDER BY match_date ASC;
