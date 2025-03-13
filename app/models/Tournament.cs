@@ -1,13 +1,13 @@
 
-using System.ComponentModel.DataAnnotations;
+using System;
 public class Tournament
 {
-    public int TournamentId;
-    public string TournamentName;
-    public string Game;
-    public int MaxPlayers;
-    public DateTime StartDate;
-    public DateTime CreatedAt;
+    private int TournamentId;
+    private String TournamentName;
+    private String Game;
+    private int MaxPlayers;
+    private DateTime StartDate;
+    private DateTime CreatedAt;
 
     public Tournament(int tournamentId, string tournamentName, string game, int maxPlayers, DateTime startDate)
     {   

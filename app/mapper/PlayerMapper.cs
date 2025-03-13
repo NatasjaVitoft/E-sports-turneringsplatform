@@ -1,13 +1,8 @@
 using Npgsql;
 
-public class PlayerMapper
+public class PlayerMapper(string connectionString)
 {
-    private string _connectionString;
-
-    public PlayerMapper(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
+    private string _connectionString = connectionString;
 
     public async Task RegisterPlayer(Player player)
     {
@@ -22,8 +17,7 @@ public class PlayerMapper
 
                 await cmd.ExecuteNonQueryAsync();
             }
-        }
-
+        }  
         Console.WriteLine($"Player with username '{player.GetUsername()}' has been registered.");
     }
 }
