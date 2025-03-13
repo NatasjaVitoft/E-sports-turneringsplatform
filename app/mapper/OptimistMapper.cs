@@ -1,8 +1,13 @@
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using Npgsql; 
  
 public class OptimistMapper(string connectionString)
 {
+    //  stresstes
+    int successfulTransactions = 0;
+    int rollbacks = 0;
     private string _connectionString = connectionString;
 
     public async Task<bool> SetStartDate(int tournamentId, DateOnly date)
@@ -40,11 +45,13 @@ public class OptimistMapper(string connectionString)
                         if (commitVersion == initVersion + 1)
                         {
                             await tx.CommitAsync();
+                            Interlocked.Increment(ref successfulTransactions);
                             return true;
                         }
                         else
                         {
                             await tx.RollbackAsync();
+                            Interlocked.Increment(ref rollbacks);
                             return false;
                         }
                     }
@@ -52,9 +59,39 @@ public class OptimistMapper(string connectionString)
                 catch (Exception)
                 {
                     await tx.RollbackAsync();
+                    Interlocked.Increment(ref rollbacks);
                     throw;
                 }
             }
         }
+    }
+
+    public async Task SetStartDateStressTest(int numThreads)
+    {
+        this.successfulTransactions = 0;
+        this.rollbacks = 0;
+        
+        Console.WriteLine($"Starting stress test with {numThreads} threads...");
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        var tasks = new ConcurrentBag<Task>();
+        var rnd = new Random();
+
+        for (int i = 0; i < numThreads; i++)
+        {
+            int day = rnd.Next(1, 29);
+            int month = rnd.Next(1, 13);
+            int year = rnd.Next(2025, 2101);
+            tasks.Add(Task.Run(() => SetStartDate(1, DateOnly.Parse($"{day}-{month}-{year}"))));
+        }
+
+        await Task.WhenAll(tasks);
+        stopwatch.Stop();
+
+        Console.WriteLine("\n--- Stress Test Results ---");
+        Console.WriteLine($"Successful Transactions: {successfulTransactions}");
+        Console.WriteLine($"Rollbacks: {rollbacks}");
+        Console.WriteLine($"Time elapsed {stopwatch.Elapsed}");
+        Console.WriteLine("---------------------------");
     }
 }

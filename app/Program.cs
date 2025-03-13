@@ -22,7 +22,8 @@ while (true)
     Console.WriteLine("3. Submit Match Result");
     Console.WriteLine("4. Submit Match Result pessimistically");
     Console.WriteLine("5. Update tournament date optimistically");
-    Console.WriteLine("6. Stresstest Match result update");
+    Console.WriteLine("6. Pessimistic stress test Match result update");
+    Console.WriteLine("7. Optimistic stress test set tournament start date");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -107,7 +108,15 @@ while (true)
 
             break;
         case "6":
-            await pem.SetMatchResultStressTest();
+            Console.WriteLine("Number of threads:");
+            if (int.TryParse(Console.ReadLine(), out int pnumThreads))
+            await pem.SetMatchResultStressTest(pnumThreads);
+            break;       
+            
+        case "7":
+            Console.WriteLine("Number of threads:");
+            if (int.TryParse(Console.ReadLine(), out int onumThreads))
+            await om.SetStartDateStressTest(onumThreads);
             break;
 
         case "q":

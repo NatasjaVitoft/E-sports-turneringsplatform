@@ -8,6 +8,7 @@ public class PessimistMapper(string connectionString)
     int totalAttempts = 0;
     int successfulTransactions = 0;
     int deadlocks = 0;
+    int rollbacks = 0;
     private string _connectionString = connectionString;
 
     public async Task<bool> SetMatchResult(int matchId, int winnerId)
@@ -17,7 +18,7 @@ public class PessimistMapper(string connectionString)
         await using (var conn = new NpgsqlConnection(_connectionString))
         {
             await conn.OpenAsync();
-            await using (NpgsqlTransaction tx = await conn.BeginTransactionAsync())
+            using (NpgsqlTransaction tx = await conn.BeginTransactionAsync())
             {
                 Interlocked.Increment(ref totalAttempts);
                 for (int a = 0; a < maxRetries; a++)
@@ -44,9 +45,10 @@ public class PessimistMapper(string connectionString)
                     }
                     catch (PostgresException ex) when (ex.SqlState == "40001") // Deadlock detected
                     {
-                        await tx.RollbackAsync();
-                        Interlocked.Increment(ref deadlocks);
                         Console.WriteLine($"Deadlock detected on attempt {a}, retrying...");
+                        await tx.RollbackAsync();
+                        Interlocked.Increment(ref rollbacks);
+                        Interlocked.Increment(ref deadlocks);
 
                         await Task.Delay(delay);
                         delay *= 2;
@@ -55,6 +57,7 @@ public class PessimistMapper(string connectionString)
                     catch (Exception e)
                     {
                         Console.WriteLine($"Transaction failed: {e.Message}");
+                        Interlocked.Increment(ref rollbacks);
                         await tx.RollbackAsync();
                         return false;
                     }
@@ -66,9 +69,8 @@ public class PessimistMapper(string connectionString)
         }
     }
 
-    public async Task SetMatchResultStressTest()
+    public async Task SetMatchResultStressTest(int numThreads)
     {
-        int numThreads = 50; // Number of concurrent tasks
         this.totalAttempts = 0;
         this.successfulTransactions = 0;
         this.deadlocks = 0;
@@ -81,7 +83,7 @@ public class PessimistMapper(string connectionString)
 
         for (int i = 0; i < numThreads; i++)
         {
-            tasks.Add(Task.Run(() => SetMatchResult(1, rnd.Next(1, 9))));
+            tasks.Add(Task.Run(() => SetMatchResult(rnd.Next(1, 3), rnd.Next(1, 9))));
         }
 
         await Task.WhenAll(tasks);
