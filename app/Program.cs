@@ -1,4 +1,8 @@
-﻿using Npgsql;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
+using Npgsql;
+
 
 
 var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=esports";
@@ -7,15 +11,18 @@ var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=es
 /* What mapper to use */
 
 // PlayerMapper pm = new(connString);
-OptimistMapper om = new(connString);
 SQLMapper pm = new(connString);
+OptimistMapper om = new(connString);
+PessimistMapper pem = new(connString);
 
 while (true)
 {
     Console.WriteLine("1. Register Player");
     Console.WriteLine("2. Join Tournament");
     Console.WriteLine("3. Submit Match Result");
-    Console.WriteLine("4. TEST");
+    Console.WriteLine("4. Submit Match Result pessimistically");
+    Console.WriteLine("5. Update tournament date optimistically");
+    Console.WriteLine("6. Stresstest Match result update");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -28,20 +35,20 @@ while (true)
 
             Player newPlayer = new(username, email);
 
-            try {await pm.RegisterPlayer(newPlayer);}
-            catch (NpgsqlException e) {Console.WriteLine(e.Message);}
+            try { await pm.RegisterPlayer(newPlayer); }
+            catch (NpgsqlException e) { Console.WriteLine(e.Message); }
             break;
-        
+
         case "2":
             // Join tournament
             Console.WriteLine("Enter Tournament ID:");
             if (int.TryParse(Console.ReadLine(), out int t_id))
-            Console.WriteLine("Enter player ID:");
+                Console.WriteLine("Enter player ID:");
 
             if (int.TryParse(Console.ReadLine(), out int p_id))
 
-            try { await pm.JoinTournament(p_id, t_id); }
-            catch (NpgsqlException e) { Console.WriteLine(e.Message); }
+                try { await pm.JoinTournament(p_id, t_id); }
+                catch (NpgsqlException e) { Console.WriteLine(e.Message); }
 
             Console.WriteLine("Joined Tournament!");
             break;
@@ -50,38 +57,57 @@ while (true)
             // submit match result
             Console.WriteLine("Enter Match ID:");
             if (int.TryParse(Console.ReadLine(), out int m_id))
-            Console.WriteLine("Enter Winner ID:");
+                Console.WriteLine("Enter Winner ID:");
 
             if (int.TryParse(Console.ReadLine(), out int w_id))
 
-            try { await pm.SubmitMatchResult(m_id, w_id); }
-            catch (NpgsqlException e) { Console.WriteLine(e.Message); }
+                try { await pm.SubmitMatchResult(m_id, w_id); }
+                catch (NpgsqlException e) { Console.WriteLine(e.Message); }
 
             Console.WriteLine("Submitted match result!");
+
+
             // ...
             break;
-        
         case "4":
-            // TEST
+            // submit match result pessimistically 
+
+            Console.WriteLine("Enter Match ID:");
+            if (int.TryParse(Console.ReadLine(), out int pesMatchId))
+                Console.WriteLine("Enter Winner ID:");
+
+            if (int.TryParse(Console.ReadLine(), out int pesWinnerId))
+
+                if (await pem.SetMatchResult(pesMatchId, pesWinnerId))
+                {
+                    Console.WriteLine("Submitted match result!");
+                }
+
+            break;
+
+        case "5":
             Console.WriteLine("TEST");
 
             Console.WriteLine("Enter Tournament ID:");
             if (int.TryParse(Console.ReadLine(), out t_id))
-            Console.WriteLine("Enter Start date:");
+                Console.WriteLine("Enter Start date:");
             if (DateOnly.TryParse(Console.ReadLine(), out DateOnly date))
 
 
-            try 
-            {
-                if (await om.SetStartDate(t_id, date))
+                try
                 {
-                    Console.WriteLine($"Succesfully set start date to {date}");
+                    if (await om.SetStartDate(t_id, date))
+                    {
+                        Console.WriteLine($"Succesfully set start date to {date}");
+                    }
+
+                    else Console.WriteLine("Update failed");
                 }
+                catch (NpgsqlException e) { Console.WriteLine(e.Message, e.StackTrace); }
 
-                else Console.WriteLine("Update failed");
-            }
-            catch (NpgsqlException e) { Console.WriteLine(e.Message, e.StackTrace);}
-
+            break;
+        case "6":
+            await pem.SetMatchResultStressTest();
             break;
 
         case "q":
