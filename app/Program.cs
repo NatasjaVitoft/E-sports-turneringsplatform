@@ -87,8 +87,6 @@ while (true)
             break;
 
         case "5":
-            Console.WriteLine("TEST");
-
             Console.WriteLine("Enter Tournament ID:");
             if (int.TryParse(Console.ReadLine(), out t_id))
                 Console.WriteLine("Enter Start date:");
