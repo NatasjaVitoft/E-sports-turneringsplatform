@@ -94,4 +94,103 @@ public class OptimistMapper(string connectionString)
         Console.WriteLine($"Time elapsed {stopwatch.Elapsed}");
         Console.WriteLine("---------------------------");
     }
+
+    public async Task<bool> RegisterPlayerToTournamentOptimistic(int playerId, int tournamentId)
+    {
+        await using (var conn = new NpgsqlConnection(_connectionString))
+        {
+            await conn.OpenAsync();
+            await using (NpgsqlTransaction tx = await conn.BeginTransactionAsync())
+            {
+                try
+                {
+                    await using (var insertBatch = new NpgsqlBatch(conn, tx))
+                    {
+                        insertBatch.BatchCommands.Add(new NpgsqlBatchCommand("LOCK TABLE tournament_registrations IN ACCESS EXCLUSIVE MODE"));
+
+                        var insertCmd = new NpgsqlBatchCommand(
+                            $"INSERT INTO tournament_registrations (tournament_id, player_id) VALUES (@tournament_id, @player_id)");
+                        insertCmd.Parameters.AddWithValue("tournament_id", tournamentId);
+                        insertCmd.Parameters.AddWithValue("player_id", playerId);
+
+                        insertBatch.BatchCommands.Add(insertCmd);
+
+                        await insertBatch.ExecuteNonQueryAsync();
+                    }
+
+                    int max_players;
+                    await using (var selectCmd = new NpgsqlCommand("SELECT max_players FROM tournaments WHERE tournament_id = @tournament_id", conn, tx))
+                    {
+                        selectCmd.Parameters.AddWithValue("tournament_id", tournamentId);
+                        using var mpReader = await selectCmd.ExecuteReaderAsync();
+                        if (!await mpReader.ReadAsync())
+                        {
+                            throw new Exception($"No tournament with id: {tournamentId}");
+                        }
+                        max_players = mpReader.GetInt32(0);
+                    }
+
+                    int count;
+                    await using (var countCmd = new NpgsqlCommand("SELECT COUNT(*) FROM tournament_registrations WHERE tournament_id = @tournament_id", conn, tx))
+                    {
+                        countCmd.Parameters.AddWithValue("tournament_id", tournamentId);
+                        using var cReader = await countCmd.ExecuteReaderAsync();
+                        if (!await cReader.ReadAsync())
+                        {
+                            throw new Exception($"No Registrations found with tournament: {tournamentId}");
+                        }
+
+                        count = cReader.GetInt32(0);
+                    }
+
+                    if (count <= max_players)
+                    {
+                        await tx.CommitAsync();
+                        Interlocked.Increment(ref successfulTransactions);
+                        Console.WriteLine($"Player {playerId} registered at tournament {tournamentId}");
+                        return true;
+                    }
+
+                    await tx.RollbackAsync();
+                    Console.WriteLine($"Max players reached in tournament: {tournamentId}");
+                    Interlocked.Increment(ref rollbacks);
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    await tx.RollbackAsync();
+                    Interlocked.Increment(ref rollbacks);
+                    Console.WriteLine(e.Message);
+                    return false;
+                }
+            }
+        }
+    }
+
+    public async Task RegisterPlayerTournamentStressTest(int numThreads)
+    {
+        this.successfulTransactions = 0;
+        this.rollbacks = 0;
+        
+        Console.WriteLine($"Starting stress test with {numThreads} threads...");
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        var tasks = new ConcurrentBag<Task>();
+        var rnd = new Random();
+
+        for (int i = 0; i < numThreads; i++)
+        {
+            int playerId = rnd.Next(1, 10);
+            tasks.Add(Task.Run(() => RegisterPlayerToTournamentOptimistic(playerId, 5)));
+        }
+
+        await Task.WhenAll(tasks);
+        stopwatch.Stop();
+
+        Console.WriteLine("\n--- Stress Test Results ---");
+        Console.WriteLine($"Successful Transactions: {successfulTransactions}");
+        Console.WriteLine($"Rollbacks: {rollbacks}");
+        Console.WriteLine($"Time elapsed {stopwatch.Elapsed}");
+        Console.WriteLine("---------------------------");
+    }
 }

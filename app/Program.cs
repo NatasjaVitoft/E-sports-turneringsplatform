@@ -21,6 +21,8 @@ while (true)
     Console.WriteLine("5. Update tournament date optimistically");
     Console.WriteLine("6. Pessimistic stress test Match result update");
     Console.WriteLine("7. Optimistic stress test set tournament start date");
+    Console.WriteLine("8. Pessimistic Register player to tournament");
+    Console.WriteLine("9. Register player to tournament stress test");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
@@ -113,6 +115,27 @@ while (true)
             if (int.TryParse(Console.ReadLine(), out int onumThreads))
             await om.SetStartDateStressTest(onumThreads);
             break;
+
+        case "8":
+            Console.WriteLine("Enter Tournament ID:");
+            if (int.TryParse(Console.ReadLine(), out t_id))
+                Console.WriteLine("Enter player ID:");
+
+            if (int.TryParse(Console.ReadLine(), out p_id))
+
+                if (await om.RegisterPlayerToTournamentOptimistic(p_id, t_id))
+                {
+                    Console.WriteLine("Registered player");
+                }
+                else Console.WriteLine("Failed to register player");
+
+            break;
+
+        case "9":
+            Console.WriteLine("Number of threads:");
+            if (int.TryParse(Console.ReadLine(), out int rnumThreads))
+            await om.RegisterPlayerTournamentStressTest(rnumThreads);       
+            break;    
 
         case "q":
             return;

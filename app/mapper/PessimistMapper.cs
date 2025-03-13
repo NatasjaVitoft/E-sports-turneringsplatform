@@ -83,7 +83,7 @@ public class PessimistMapper(string connectionString)
 
         for (int i = 0; i < numThreads; i++)
         {
-            tasks.Add(Task.Run(() => SetMatchResult(rnd.Next(1, 3), rnd.Next(1, 9))));
+            tasks.Add(Task.Run(() => SetMatchResult(1, rnd.Next(1, 9))));
         }
 
         await Task.WhenAll(tasks);
@@ -92,6 +92,7 @@ public class PessimistMapper(string connectionString)
         Console.WriteLine("\n--- Stress Test Results ---");
         Console.WriteLine($"Total Attempts: {totalAttempts}");
         Console.WriteLine($"Successful Transactions: {successfulTransactions}");
+        Console.WriteLine($"Rollbacks: {rollbacks}");
         Console.WriteLine($"Deadlocks Detected: {deadlocks}");
         Console.WriteLine($"Time elapsed {stopwatch.Elapsed}");
         Console.WriteLine("---------------------------");
