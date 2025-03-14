@@ -95,6 +95,8 @@ public class OptimistMapper(string connectionString)
         Console.WriteLine("---------------------------");
     }
 
+    //  Was intended as optimistic, but had to be changed to pessimistic to behave correctly!
+
     public async Task<bool> RegisterPlayerToTournamentOptimistic(int playerId, int tournamentId)
     {
         await using (var conn = new NpgsqlConnection(_connectionString))
