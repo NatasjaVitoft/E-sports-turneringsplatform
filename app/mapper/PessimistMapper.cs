@@ -11,6 +11,77 @@ public class PessimistMapper(string connectionString)
     int rollbacks = 0;
     private string _connectionString = connectionString;
 
+    public async Task<bool> SetStartDate(int tournamentId, DateOnly date)
+    {
+        await using (var conn = new NpgsqlConnection(_connectionString))
+        {
+            await conn.OpenAsync();
+            await using (NpgsqlTransaction tx = await conn.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Lock Table for update
+                    var lockCmd = new NpgsqlCommand("SELECT * FROM tournaments_pes WHERE tournament_id = @tournament_id FOR UPDATE NOWAIT", conn, tx);
+                    lockCmd.Parameters.AddWithValue("tournament_id", tournamentId);
+                    var lockResult = await lockCmd.ExecuteScalarAsync();
+                        
+                    if (lockResult != null)
+                    {
+                        // Update date  
+                        await using (var cmd2 = new NpgsqlCommand(
+                            "UPDATE tournaments_pes SET start_date = @date WHERE tournament_id = @tournament_id", conn, tx))
+                        {
+                            cmd2.Parameters.AddWithValue("date", date);
+                            cmd2.Parameters.AddWithValue("tournament_id", tournamentId);
+                            await cmd2.ExecuteScalarAsync();
+                        }
+                    }
+                    await tx.CommitAsync();
+                    Console.WriteLine($"Starte date updated on tournament: {tournamentId}");
+                    Interlocked.Increment(ref successfulTransactions);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    await tx.RollbackAsync();
+                    Interlocked.Increment(ref rollbacks);
+                    Console.WriteLine($"Update failed: {e.Message}");
+                    return false;
+                }
+            }
+        }
+    }
+
+    public async Task SetStartDateStressTest(int numThreads)
+    {
+        this.successfulTransactions = 0;
+        this.rollbacks = 0;
+        
+        Console.WriteLine($"Starting stress test with {numThreads} threads...");
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        var tasks = new ConcurrentBag<Task>();
+        var rnd = new Random();
+
+        for (int i = 0; i < numThreads; i++)
+        {
+            int day = rnd.Next(1, 29);
+            int month = rnd.Next(1, 13);
+            int year = rnd.Next(2025, 2101);
+            tasks.Add(Task.Run(() => SetStartDate(1, DateOnly.Parse($"{day}-{month}-{year}"))));
+        }
+
+        await Task.WhenAll(tasks);
+        stopwatch.Stop();
+
+        Console.WriteLine("\n--- Stress Test Results ---");
+        Console.WriteLine($"Successful Transactions: {successfulTransactions}");
+        Console.WriteLine($"Rollbacks: {rollbacks}");
+        Console.WriteLine($"Time elapsed {stopwatch.Elapsed}");
+        Console.WriteLine("---------------------------");
+    }
+
+
     public async Task<bool> SetMatchResult(int matchId, int winnerId)
     {
         int maxRetries = 10;
