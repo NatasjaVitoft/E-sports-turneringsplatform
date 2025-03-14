@@ -1,7 +1,5 @@
 ﻿using Npgsql;
 
-
-
 var connString = "Host=127.0.0.1;Username=postgres;Password=postgres;Database=esports";
 
 
@@ -22,9 +20,9 @@ while (true)
     Console.WriteLine("6. Pessimistic stress test Match result update");
     Console.WriteLine("7. Optimistic stress test set tournament start date");
     Console.WriteLine("8. Pessimistic Register player to tournament");
-    Console.WriteLine("9. Register player to tournament stress test");
+    Console.WriteLine("9. Optimistic stress test register player to tournament");
     Console.WriteLine("10. Update tournament date pessimistically");
-    Console.WriteLine("11. Update tournament date pessimistically stress test");
+    Console.WriteLine("11. Pessimistic stress test update tournament date");
     Console.WriteLine("q. Quit");
 
     switch (Console.ReadLine())
