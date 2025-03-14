@@ -17,7 +17,7 @@ q. Quit
 
 ## Stress test results:
 
-__Test Scenario:__ 
+__Test Scenario:__
 The scenario used is a function for updating start dates on a tournament concurrently. we created 2 different transaction management styles for this function, namely optimistic and pessimistic to compare the results.
 We use 50 concurrent threads for testing the scenario
 
