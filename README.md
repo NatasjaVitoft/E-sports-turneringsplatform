@@ -43,3 +43,21 @@ All transactions are successful, but on the cost of a high execution time of 2 m
 | Rollbacks  | 47  |
 
 When not queueing the transactions, the execution time is significantly smaller, but only 3 transactions are succesful, indicating that 47 of the transactions had to initially way for other transactions to finish.
+
+### Optimistic Concurrency Control (PCC) Results
+
+| Metric | Value|
+|----------|----------|
+| Execution Time (ms)   | 00:00:00.0843369   |
+| Number of successful transactions  | 1  |
+| Rollbacks  | 49  |
+
+
+### Comparison table
+
+| **Metric**               | **Optimistic CC (OCC)**                                                                 | **Pessimistic CC (PCC)**                                                            |
+|-------------------------|----------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| **Execution Time**       | OCC is much faster than PCC, as shown in our tests.                                    | PCC is much slower because it has significant wait time (unless using the `NO WAIT` keyword in SQL). |
+| **Transaction Success Rate** | OCC has a lower transaction success rate because it only checks for conflicts at the commit stage and does not lock rows during execution. | PCC has a higher transaction success rate because it locks the row at the start of the transaction, preventing conflicts and reducing rollbacks at the commit stage. |
+| **Lock Contention**      | Minimal locking.                                                                       | High locking due to rows being locked during the transaction.                      |
+| **Best Use Case**        | OCC is best suited for use cases where conflicts are not expected to occur frequently, such as in systems that are primarily read-heavy. An example of this could be **Wikipedia**, where reading is much more common than updating, which happens less often. If updates to a page do occur simultaneously, they typically don't cause serious conflicts, and a message like *“Try again”* would not be critical. | PCC is ideal for use cases with frequent updates. An example is a **ticketing system**, where a row representing a ticket should be locked when someone is in the process of purchasing it. It would be problematic if a user enters all their purchase details only to receive an error at the end, stating that the ticket is no longer available. |
